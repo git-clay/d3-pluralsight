@@ -1,6 +1,8 @@
 import * as d3 from 'https://unpkg.com/d3?module'
 // import '../node_modules/d3-selection';
 // import '../node_modules/d3-selection-multi';
+
+
 let w = 300,
     h = 200,
     padding = 2
@@ -156,57 +158,70 @@ scatterSvg.selectAll('circle')
 
 //#endregion
 //#region scaling data
-let largerPadding = 30
-let minDate = getDate(lineDateData[0]['month'])
-let maxDate = getDate(lineDateData[lineDateData.length - 1]['month'])
-let xScale = d3.scaleTime()
-    .domain([minDate, maxDate]) //input min/max
-    .range([largerPadding, w - largerPadding]) //output pixels for svg
+const largerPadding = 30
+const minDate = getDate(lineDateData[0]['month']),
+    maxDate = getDate(lineDateData[lineDateData.length - 1]['month']);
+const scaleLineSvg = d3
+    .select('#scaleLine')
+    .append('svg')
+    .attr('width', w)
+    .attr('height', h)
 
-let yScale = d3.scaleLinear()
+// scale and draw line
+let xScale = d3
+    .scaleTime()
+    .domain([minDate, maxDate]) // input
+    .range([largerPadding, w - largerPadding]); // output
+let yScale = d3
+    .scaleLinear()
     .domain([
         d3.min(lineDateData, d => d.sales),
         d3.max(lineDateData, d => d.sales)
     ])
-    .range([h - largerPadding, largerPadding])
-
-let xAxis = d3.axisBottom()
-    .scale(xScale).tickFormat(d3.timeFormat('%b'))
-let yAxis = d3.axisLeft()
-    .scale(yScale)
-
-let scaleLineSvg = d3.select('#scaleLine')
-    .append('svg')
-    .attr('width', w)
-    .attr('height', h)
-
-let scaleLine = d3.line()
+    .range([h - largerPadding, largerPadding]);
+let scaleLine = d3 // resizes data line 
+    .line()
     .x(d => xScale(getDate(d.month)))
-    .y(d => yScale(d.sales))
+    .y(d => yScale(d.sales));
 
-scaleLineSvg.append('g')
-    .call(xAxis)
-    .attr('class', 'axis')
-    .attr('transform', `translate(0,${h-largerPadding})`)
-
-scaleLineSvg.append('g')
-    .call(yAxis)
-    .attr('class', 'axis')
-    .attr('transform', `translate(${largerPadding},0)`)
-
-scaleLineSvg.append('path')
+scaleLineSvg // draw data line
+    .append('path')
     .attr('d', scaleLine(lineDateData))
     .attr('stroke', 'purple')
     .attr('fill', 'none')
     .attr('stroke-width', 3)
+    .attr('id', `lineGraphPath`);
+
+// axes
+let xAxisGen = d3
+    .axisBottom()
+    .scale(xScale)
+    .tickFormat(d3.timeFormat('%b'));
+let yAxisGen = d3.axisLeft()
+    .scale(yScale);
+
+scaleLineSvg // xAxisGen
+    .append('g')
+    .call(xAxisGen)
+    .attr('class', 'x-axis')
+    .attr('transform', `translate(0,${h-largerPadding})`);
+scaleLineSvg // yAxisGen
+    .append('g')
+    .call(yAxisGen)
+    .attr('class', 'y-axis')
+    .attr('transform', `translate(${largerPadding},0)`);
+
+
 //#endregion
 //#region filter
-let filterSvg = d3.select('#filter')
+let filterSvg = d3
+    .select('#filter')
     .append('svg')
     .attr('width', w)
     .attr('height', h)
 
-filterSvg.selectAll('circle')
+filterSvg
+    .selectAll('circle')
     .data(lineData)
     .enter()
     .append('circle')
@@ -214,7 +229,8 @@ filterSvg.selectAll('circle')
     .attr('cy', d => h - d.sales)
     .attr('r', 3)
     .attr('fill', 'blue')
-filterSvg.selectAll('text')
+filterSvg
+    .selectAll('text')
     .data(lineData)
     .enter()
     .append('text')
@@ -222,11 +238,16 @@ filterSvg.selectAll('text')
     .attr('x', d => d.month * 3)
     .attr('y', d => h - d.sales)
 
-d3.select('select')
+d3
+    .select('#label-option')
     .on('change', d => {
-        let sel = d3.select('#label-option').node().value
-        filterSvg.selectAll('text')
+        let sel = d3
+            .select('#label-option')
+            .node()
+            .value;
+        filterSvg
+            .selectAll('text')
             .data(lineData)
-            .text(d => showMinMax(lineData, 'sales', d.sales, sel))
-    })
+            .text(d => showMinMax(lineData, 'sales', d.sales, sel));
+    });
 //#endregion
