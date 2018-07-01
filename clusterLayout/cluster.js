@@ -67,3 +67,25 @@ let links = d3.select('svg g.links')
     .attr('y2', function (d) {
         return d.target.y;
     });
+
+
+nodes.call(d3.drag()
+    .on("start", dragstarted)
+    .on("drag", dragged)
+    .on("end", dragended));
+
+function dragstarted(d) {
+    d3.select(this).raise().classed("active", true);
+}
+
+function dragged(d) {
+    console.log(d)
+    d3.select(this)
+        // .attr("x", d.x = d3.event.x)
+        .attr("cy", d.y = d3.event.y)
+        .attr("cy", d.y = d3.event.y);
+}
+
+function dragended(d) {
+    d3.select(this).classed("active", false);
+}
