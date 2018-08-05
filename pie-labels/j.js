@@ -1,5 +1,5 @@
 const donutChart = () => {
-    const width,
+    let width,
         height,
         margin = {
             top: 10,
@@ -21,12 +21,12 @@ const donutChart = () => {
 
             // ===========================================================================================
             // Set up constructors for making donut. See https://github.com/d3/d3-shape/blob/master/README.md
-            
+
             // creates a new pie generator
             const pie = d3.pie()
-            .value(d => floatFormat(d[variable]))
-            .sort(null);
-            
+                .value(d => floatFormat(d[variable]))
+                .sort(null);
+
             // contructs and arc generator. This will be used for the donut. The difference between outer and inner
             // radius will dictate the thickness of the donut
             const radius = Math.min(width, height) / 2;
@@ -47,7 +47,7 @@ const donutChart = () => {
                 .attr('width', width + margin.left + margin.right)
                 .attr('height', height + margin.top + margin.bottom)
                 .append('g')
-                .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
+                .attr('transform', `translate(${width/2}, ${height / 2})`);
             // ===========================================================================================
 
             // g elements to keep elements within svg modular
@@ -64,14 +64,15 @@ const donutChart = () => {
                 .attr('fill', d => colour(d.data[category]))
                 .attr('d', arc);
             // ===========================================================================================
-
+            // calculates the angle for the middle of a slice
+            const midAngle = d => d.startAngle + (d.endAngle - d.startAngle) / 2;
             // add text labels
             const label = svg.select('.labelName').selectAll('text')
                 .data(pie)
                 .enter().append('text')
                 .attr('dy', '.35em')
                 // add "key: value" for given category. Number inside tspan is bolded in stylesheet.
-                .html(d => d.data[category] + ': <tspan>' + percentFormat(d.data[variable]) + '</tspan>')
+                .html(d => `${d.data[category]} <tspan> ${percentFormat(d.data[variable])} </tspan>`)
                 .attr('transform', d => {
 
                     // effectively computes the centre of the slice.
@@ -80,7 +81,7 @@ const donutChart = () => {
 
                     // changes the point to be on left or right depending on where label is.
                     pos[0] = radius * 0.95 * (midAngle(d) < Math.PI ? 1 : -1);
-                    return 'translate(' + pos + ')';
+                    return `translate(${pos})`;
                 })
                 // if slice centre is on the left, anchor text to start, otherwise anchor to end
                 .style('text-anchor', d => (midAngle(d)) < Math.PI ? 'start' : 'end');
@@ -100,14 +101,7 @@ const donutChart = () => {
                 });
             // ===========================================================================================
 
-            // add tooltip to mouse events on slices and labels
-            d3.selectAll('.labelName text, .slices path').call(toolTip);
-            // ===========================================================================================
-
-            // #region Functions
-
-            // calculates the angle for the middle of a slice
-            const midAngle = d => d.startAngle + (d.endAngle - d.startAngle) / 2;
+            // #region mouse event / tooltip functions
 
             // function that creates and adds the tool tip to a selected element
             const toolTip = selection => {
@@ -133,12 +127,14 @@ const donutChart = () => {
                 // remove the tooltip when mouse leaves the slice/label
                 selection.on('mouseout', () => d3.selectAll('.toolCircle').remove());
             }
+            // add tooltip to mouse events on slices and labels
+            d3.selectAll('.labelName text, .slices path').call(toolTip);
 
             // function to create the HTML string for the tool tip. Loops through each key in data object
             // and returns the html string key: value
             const toolTipHTML = data => {
 
-                const tip = '',
+                let tip = '',
                     i = 0;
 
                 for (const key in data.data) {
@@ -148,8 +144,8 @@ const donutChart = () => {
 
                     // leave off 'dy' attr for first tspan so the 'dy' attr on text element works. The 'dy' attr on
                     // tspan effectively imitates a line break.
-                    if (i === 0) tip += '<tspan x="0">' + key + ': ' + value + '</tspan>';
-                    else tip += '<tspan x="0" dy="1.2em">' + key + ': ' + value + '</tspan>';
+                    if (i === 0) tip += `<tspan x="0">${key}: ${value}</tspan>`;
+                    else tip += `<tspan x="0" dy="1.2em">${key}: ${value}</tspan>`;
                     i++;
                 }
 
@@ -162,47 +158,47 @@ const donutChart = () => {
     // #region get; set;
     // getter and setter functions. See Mike Bostocks post "Towards Reusable Charts" for a tutorial on how this works.
     chart.width = value => {
-        !arguments.length ? width : width = value;
+        !value ? width : width = value;
         return chart;
     };
 
     chart.height = value => {
-        !arguments.length ? height : height = value;
+        !value ? height : height = value;
         return chart;
     };
 
     chart.margin = value => {
-        !arguments.length ? margin : margin = value;
+        !value ? margin : margin = value;
         return chart;
     };
 
     chart.radius = value => {
-        !arguments.length ? radius : radius = value;
+        !value ? radius : radius = value;
         return chart;
     };
 
     chart.padAngle = value => {
-        !arguments.length ? padAngle : padAngle = value;
+        !value ? padAngle : padAngle = value;
         return chart;
     };
 
     chart.cornerRadius = value => {
-        !arguments.length ? cornerRadius : cornerRadius = value;
+        !value ? cornerRadius : cornerRadius = value;
         return chart;
     };
 
     chart.colour = value => {
-        !arguments.length ? colour : colour = value;
+        !value ? colour : colour = value;
         return chart;
     };
 
     chart.variable = value => {
-        !arguments.length ? variable : variable = value;
+        !value ? variable : variable = value;
         return chart;
     };
 
     chart.category = value => {
-        !arguments.length ? category : category = value;
+        !value ? category : category = value;
         return chart;
     };
     // #endregion
